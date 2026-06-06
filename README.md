@@ -184,6 +184,25 @@ O projeto ja esta preparado para deploy como WAR, mas Railway normalmente trabal
 Observacao importante:
 Railway nao oferece Oracle nativo como banco gerenciado. Na pratica, voce precisara usar uma instancia Oracle externa acessivel publicamente, com regras de rede e credenciais seguras.
 
+## Deploy com Docker no Railway
+
+Este repositorio contem um `Dockerfile` para evitar falhas do builder automatico do Railway com `JAVA_HOME` e garantir:
+
+- Java 17 no build
+- Maven no build
+- Tomcat 10.1 no runtime
+- bind automatico na porta `PORT` fornecida pelo Railway
+
+Passos:
+
+1. No Railway, use deploy a partir deste repositório GitHub.
+2. Garanta que o projeto detecte o `Dockerfile`.
+3. Configure as variaveis:
+   `DB_URL`, `DB_USER`, `DB_PASSWORD`
+4. Faça novo deploy.
+
+Com essa configuracao, o WAR e gerado na etapa Docker e publicado como `ROOT.war` no Tomcat.
+
 ## Observacoes de evolucao
 
 - Migrar hash SHA-256 para BCrypt/Argon2
