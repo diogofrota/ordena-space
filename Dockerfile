@@ -3,18 +3,13 @@ FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY pom.xml .
-COPY .mvn .mvn
-COPY mvnw .
-COPY mvnw.cmd .
-
-RUN chmod +x mvnw
-RUN ./mvnw -B -DskipTests dependency:go-offline
+RUN mvn -B -DskipTests dependency:go-offline
 
 COPY src src
 COPY sql sql
 COPY README.md .
 
-RUN ./mvnw -B -DskipTests clean package
+RUN mvn -B -DskipTests clean package
 
 FROM tomcat:10.1.34-jre17-temurin
 
