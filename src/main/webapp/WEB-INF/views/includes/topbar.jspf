@@ -1,0 +1,12 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<header class="topbar">
+    <button class="sidebar-toggle" type="button" aria-label="Alternar menu">Menu</button>
+    <div>
+        <span class="topbar-label">painel seguro</span>
+        <h2>${pageTitle}</h2>
+    </div>
+    <div class="topbar-user">
+        <span>${sessionScope.currentUser.email}</span>
+        <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
+    </div>
+</header>

@@ -1,0 +1,40 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<aside class="sidebar">
+    <div class="brand-panel">
+        <span class="brand-kicker">monitoramento tatico</span>
+        <h1>ORDENA SPACE</h1>
+        <p>Controle web de equipes policiais em campo.</p>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a class="nav-link ${activeMenu eq 'dashboard' ? 'is-active' : ''}" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
+
+        <div class="nav-group ${activeMenu eq 'viaturas' ? 'is-open' : ''}">
+            <button class="nav-group-toggle" type="button">Viaturas</button>
+            <div class="nav-submenu">
+                <a class="nav-sublink" href="${pageContext.request.contextPath}/viaturas?action=form">Cadastrar</a>
+                <a class="nav-sublink" href="${pageContext.request.contextPath}/viaturas">Listar</a>
+            </div>
+        </div>
+
+        <div class="nav-group ${activeMenu eq 'policiais' ? 'is-open' : ''}">
+            <button class="nav-group-toggle" type="button">Policiais</button>
+            <div class="nav-submenu">
+                <a class="nav-sublink" href="${pageContext.request.contextPath}/policiais?action=form">Cadastrar</a>
+                <a class="nav-sublink" href="${pageContext.request.contextPath}/policiais">Listar</a>
+            </div>
+        </div>
+
+        <div class="nav-group ${activeMenu eq 'setores' ? 'is-open' : ''}">
+            <button class="nav-group-toggle" type="button">Setores</button>
+            <div class="nav-submenu">
+                <a class="nav-sublink" href="${pageContext.request.contextPath}/setores?action=form">Cadastrar</a>
+                <a class="nav-sublink" href="${pageContext.request.contextPath}/setores">Listar</a>
+                <a class="nav-sublink" href="${pageContext.request.contextPath}/setores/mapa">Mapa</a>
+            </div>
+        </div>
+
+        <a class="nav-link ${activeMenu eq 'ativacao' ? 'is-active' : ''}" href="${pageContext.request.contextPath}/ativacao">Ativacao</a>
+        <a class="nav-link ${activeMenu eq 'monitoramento' ? 'is-active' : ''}" href="${pageContext.request.contextPath}/monitoramento">Monitoramento</a>
+    </nav>
+</aside>
