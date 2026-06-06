@@ -16,6 +16,8 @@ import java.sql.SQLException;
  */
 public final class DatabaseConnectionFactory {
 
+    private static final String ORACLE_DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+
     private DatabaseConnectionFactory() {
     }
 
@@ -40,7 +42,20 @@ public final class DatabaseConnectionFactory {
             );
         }
 
+        ensureOracleDriverLoaded();
+
         return DriverManager.getConnection(url, user, password);
+    }
+
+    private static void ensureOracleDriverLoaded() throws SQLException {
+        try {
+            Class.forName(ORACLE_DRIVER_CLASS);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException(
+                "Driver JDBC do Oracle nao encontrado no classpath do Tomcat. Verifique o empacotamento do WAR.",
+                e
+            );
+        }
     }
 
     private static boolean isBlank(String value) {
