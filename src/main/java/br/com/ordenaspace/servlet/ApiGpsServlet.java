@@ -1,9 +1,7 @@
 package br.com.ordenaspace.servlet;
 
-import br.com.ordenaspace.config.GeoUtils;
-import br.com.ordenaspace.dao.ServicoAtivoDAO;
-import br.com.ordenaspace.model.ServicoAtivo;
-import br.com.ordenaspace.model.ServicoStatus;
+import br.com.ordenaspace.service.GpsProcessingService;
+import br.com.ordenaspace.service.GpsUpdateResult;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -16,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * Descricao da funcao:
@@ -29,7 +28,7 @@ import java.util.Map;
  */
 public class ApiGpsServlet extends HttpServlet {
     private static final Gson GSON = new Gson();
-    private final ServicoAtivoDAO servicoAtivoDAO = new ServicoAtivoDAO();
+    private final GpsProcessingService gpsProcessingService = new GpsProcessingService();
 
     /**
      * Descricao da funcao:
@@ -66,47 +65,25 @@ public class ApiGpsServlet extends HttpServlet {
             double latitude = payload.get("latitude").getAsDouble();
             double longitude = payload.get("longitude").getAsDouble();
 
-            if (tabletSatelital == null || tabletSatelital.isBlank()) {
-                writeJson(response, HttpServletResponse.SC_BAD_REQUEST, error("tabletSatelital e obrigatorio."));
-                return;
-            }
-
-            if (Double.isNaN(latitude) || Double.isInfinite(latitude) || latitude < -90.0d || latitude > 90.0d) {
-                writeJson(response, HttpServletResponse.SC_BAD_REQUEST, error("Latitude invalida."));
-                return;
-            }
-
-            if (Double.isNaN(longitude) || Double.isInfinite(longitude) || longitude < -180.0d || longitude > 180.0d) {
-                writeJson(response, HttpServletResponse.SC_BAD_REQUEST, error("Longitude invalida."));
-                return;
-            }
-
-            ServicoAtivo service = servicoAtivoDAO.findOpenByTabletSatelital(tabletSatelital);
-            if (service == null) {
-                writeJson(response, HttpServletResponse.SC_NOT_FOUND, error("Nenhum servico ativo encontrado para o tablet informado."));
-                return;
-            }
-
-            if (service.getSetor() == null || service.getSetor().getPontos() == null || service.getSetor().getPontos().size() < 3) {
-                writeJson(response, HttpServletResponse.SC_CONFLICT, error("O setor do servico nao possui poligono GPS valido."));
-                return;
-            }
-
-            boolean insidePolygon = GeoUtils.isPointInsidePolygon(service.getSetor().getPontos(), latitude, longitude);
-            ServicoStatus newStatus = insidePolygon ? ServicoStatus.NORMAL : ServicoStatus.ALERTA;
-            servicoAtivoDAO.updateLocationAndStatus(service.getId(), latitude, longitude, newStatus);
+            GpsUpdateResult result = gpsProcessingService.processReading(tabletSatelital, latitude, longitude);
 
             Map<String, Object> responseBody = new LinkedHashMap<>();
-            responseBody.put("servicoId", service.getId());
-            responseBody.put("tabletSatelital", tabletSatelital);
-            responseBody.put("setor", service.getSetor().getNome());
-            responseBody.put("status", newStatus.name());
-            responseBody.put("latitude", latitude);
-            responseBody.put("longitude", longitude);
-            responseBody.put("insidePolygon", insidePolygon);
+            responseBody.put("servicoId", result.getServicoId());
+            responseBody.put("tabletSatelital", result.getTabletSatelital());
+            responseBody.put("setor", result.getSetor());
+            responseBody.put("status", result.getStatus().name());
+            responseBody.put("latitude", result.getLatitude());
+            responseBody.put("longitude", result.getLongitude());
+            responseBody.put("insidePolygon", result.isInsidePolygon());
             writeJson(response, HttpServletResponse.SC_OK, responseBody);
         } catch (JsonParseException exception) {
             writeJson(response, HttpServletResponse.SC_BAD_REQUEST, error("JSON invalido."));
+        } catch (IllegalArgumentException exception) {
+            writeJson(response, HttpServletResponse.SC_BAD_REQUEST, error(exception.getMessage()));
+        } catch (NoSuchElementException exception) {
+            writeJson(response, HttpServletResponse.SC_NOT_FOUND, error(exception.getMessage()));
+        } catch (IllegalStateException exception) {
+            writeJson(response, HttpServletResponse.SC_CONFLICT, error(exception.getMessage()));
         } catch (RuntimeException exception) {
             writeJson(response, HttpServletResponse.SC_BAD_REQUEST, error("Payload JSON invalido."));
         } catch (SQLException exception) {

@@ -168,7 +168,9 @@ textarea {
     background: rgba(6, 17, 28, 0.92);
     color: var(--text-main);
     border-radius: var(--radius-sm);
-    padding: 14px 16px;
+    min-height: 54px;
+    padding: 15px 16px;
+    line-height: 1.35;
     outline: none;
     transition: border-color 0.2s ease, transform 0.2s ease;
 }

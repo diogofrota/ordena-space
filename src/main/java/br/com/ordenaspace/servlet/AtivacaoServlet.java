@@ -6,6 +6,8 @@ import br.com.ordenaspace.dao.SetorDAO;
 import br.com.ordenaspace.dao.ViaturaDAO;
 import br.com.ordenaspace.model.ServicoAtivo;
 import br.com.ordenaspace.model.ServicoStatus;
+import br.com.ordenaspace.model.Viatura;
+import br.com.ordenaspace.service.GpsPollingService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -98,7 +100,18 @@ public class AtivacaoServlet extends BaseServlet {
             servicoAtivo.setStatus(ServicoStatus.AGUARDANDO_GPS);
 
             servicoAtivoDAO.create(servicoAtivo);
-            redirectWithFlash(request, response, "/ativacao", "success", "Servico ativado com sucesso.");
+
+            String successMessage = "Servico ativado com sucesso.";
+            Viatura viatura = viaturaDAO.findById(viaturaId);
+            GpsPollingService gpsPollingService = GpsPollingService.fromContext(request.getServletContext());
+            if (viatura != null && gpsPollingService != null && gpsPollingService.isEnabled()) {
+                boolean synced = gpsPollingService.syncTabletNow(viatura.getTabletSatelital());
+                successMessage = synced
+                    ? "Servico ativado com sucesso e primeira leitura GPS processada."
+                    : "Servico ativado com sucesso. A API externa sera consultada automaticamente a cada 2 minutos.";
+            }
+
+            redirectWithFlash(request, response, "/ativacao", "success", successMessage);
         } catch (SQLException exception) {
             throw new ServletException("Falha ao processar ativacao.", exception);
         }

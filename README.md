@@ -105,6 +105,95 @@ target/ordena-space.war
 
 5. Copie ou publique esse WAR no `Tomcat 10.1+`.
 
+## Como testar local sem afetar Railway ou GitHub
+
+Fluxo recomendado:
+
+1. Use um banco separado do ambiente de producao.
+2. Guarde credenciais locais apenas em `.env.local`.
+3. Nao faça commit de `.env.local`.
+4. Teste em branch separada antes de enviar para `main`.
+
+Este repositorio ja ignora `.env.local` no Git e fornece o arquivo `.env.local.example` como modelo.
+
+### Opcao 1: subir local com Docker
+
+1. Crie seu arquivo local:
+
+```bash
+cp .env.local.example .env.local
+```
+
+2. Ajuste as credenciais do banco no `.env.local`.
+3. Se for testar a API externa de GPS localmente, ajuste tambem:
+
+```bash
+GPS_PROVIDER_ENABLED=true
+GPS_PROVIDER_BASE_URL=https://api-ordena-space-production.up.railway.app
+GPS_PROVIDER_ENDPOINT_TEMPLATE=/api/telemetria/tablets/{tabletSatelital}/ultima-posicao
+GPS_PROVIDER_INTERVAL_SECONDS=120
+GPS_PROVIDER_TIMEOUT_SECONDS=10
+```
+
+Recomendacao importante:
+Use outro schema/usuario Oracle para desenvolvimento, por exemplo `ordena_space_dev`, em vez do mesmo banco usado no Railway.
+
+4. Suba a aplicacao local:
+
+```bash
+docker compose -f docker-compose.local.yml up --build
+```
+
+5. Acesse:
+
+```text
+http://localhost:8080/login
+```
+
+### Opcao 2: testar local com Tomcat fora do Docker
+
+1. Carregue as variaveis locais no terminal:
+
+```bash
+export DB_URL="jdbc:oracle:thin:@//localhost:1521/FREEPDB1"
+export DB_USER="ordena_space_dev"
+export DB_PASSWORD="sua_senha"
+```
+
+2. Gere o WAR:
+
+```bash
+./mvnw clean package
+```
+
+3. Publique `target/ordena-space.war` no seu Tomcat local.
+
+### Fluxo seguro para nao quebrar producao
+
+1. Crie uma branch para cada mudanca:
+
+```bash
+git checkout -b teste-local-ajuste-x
+```
+
+2. Teste localmente antes de subir.
+3. So depois envie ao GitHub:
+
+```bash
+git add .
+git commit -m "descricao da mudanca"
+git push origin teste-local-ajuste-x
+```
+
+4. Abra PR e publique no Railway apenas quando validar.
+
+### O que evita problema de verdade
+
+- Nao versionar `.env.local`
+- Nao usar credenciais de producao no desenvolvimento
+- Nao testar direto na branch `main`
+- Validar local antes do push
+
 ## Como rodar no Tomcat 10.1+
 
 ### Opcao 1: deploy manual
@@ -158,6 +247,41 @@ Validacoes implementadas:
 - Aceita apenas `POST`
 - Exige `Content-Type: application/json`
 - Valida `tabletSatelital`, latitude e longitude
+- Consulta automatica opcional de API externa por `tablet_satelital`
+
+## Integracao com API externa de GPS
+
+O sistema aceita duas entradas de telemetria:
+
+1. `POST /api/gps`
+2. consulta automatica a uma API externa por `tablet_satelital`
+
+Formato esperado da API externa consultada automaticamente:
+
+```http
+GET /api/telemetria/tablets/{tabletSatelital}/ultima-posicao
+Accept: application/json
+```
+
+Resposta JSON esperada:
+
+```json
+{
+  "tabletSatelital": "80001",
+  "latitude": -23.561684,
+  "longitude": -46.625378,
+  "capturadoEm": "2026-06-07T18:40:00Z",
+  "observacao": "simulada dentro da area"
+}
+```
+
+Regras da sincronizacao automatica:
+
+- a consulta usa o `tablet_satelital` cadastrado na viatura
+- apenas servicos nao finalizados entram no polling
+- a primeira consulta e tentada logo apos a ativacao
+- as demais consultas rodam a cada `GPS_PROVIDER_INTERVAL_SECONDS`
+- resposta `404` apenas indica que ainda nao existe leitura para aquele tablet
 - Rejeita setores sem poligono GPS valido
 
 ## Variaveis de ambiente
@@ -169,6 +293,17 @@ Obrigatorias:
 - `DB_PASSWORD`
 
 Essas variaveis sao lidas por `DatabaseConnectionFactory`.
+
+Opcionais para integracao com API externa de GPS:
+
+- `GPS_PROVIDER_ENABLED`
+- `GPS_PROVIDER_BASE_URL`
+- `GPS_PROVIDER_ENDPOINT_TEMPLATE`
+- `GPS_PROVIDER_INTERVAL_SECONDS`
+- `GPS_PROVIDER_TIMEOUT_SECONDS`
+- `GPS_PROVIDER_AUTH_TOKEN`
+
+Por padrao, o sistema ja aponta para `https://api-ordena-space-production.up.railway.app` e consulta a API externa de GPS automaticamente para cada servico ativo. A primeira tentativa ocorre logo apos a ativacao e as proximas acontecem no intervalo configurado, por padrao a cada 120 segundos. As variaveis `GPS_PROVIDER_*` continuam disponiveis para override.
 
 ## Deploy no Railway
 

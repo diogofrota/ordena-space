@@ -37,7 +37,7 @@
                                 <td>${servico.policial1.nomeCompletoOperacional}</td>
                                 <td>${servico.policial2Nome}</td>
                                 <td>${servico.dataHoraInicioFormatada}</td>
-                                <td><span class="status-pill status-${servico.status}">${servico.status}</span></td>
+                                <td><span class="status-pill status-${servico.status}">${servico.status.descricaoExibicao}</span></td>
                                 <td>${servico.latitudeAtualFormatada}</td>
                                 <td>${servico.longitudeAtualFormatada}</td>
                                 <td>

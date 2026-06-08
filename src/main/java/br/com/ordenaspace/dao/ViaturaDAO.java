@@ -111,6 +111,37 @@ public class ViaturaDAO {
 
     /**
      * Descricao da funcao:
+     * Busca uma viatura especifica pelo identificador primario.
+     * Parametros e retorno:
+     * Recebe Long id e retorna Viatura ou null.
+     * Armazenamento e persistencia:
+     * Le um unico registro da tabela viaturas para compor fluxos operacionais.
+     * TODO para evolucao online/producao:
+     * Acrescentar cache leve e metadados de rastreamento por dispositivo.
+     */
+    public Viatura findById(Long id) throws SQLException {
+        String sql = """
+            SELECT id, numero, placa, tablet_satelital
+            FROM viaturas
+            WHERE id = ?
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapRow(resultSet);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Descricao da funcao:
      * Remove uma viatura pelo identificador primario.
      * Parametros e retorno:
      * Recebe o id da viatura e nao retorna valor.

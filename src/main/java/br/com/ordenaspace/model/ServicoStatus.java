@@ -14,5 +14,14 @@ public enum ServicoStatus {
     AGUARDANDO_GPS,
     NORMAL,
     ALERTA,
-    FINALIZADO
+    FINALIZADO;
+
+    public String getDescricaoExibicao() {
+        return switch (this) {
+            case AGUARDANDO_GPS -> "AGUARDANDO GPS";
+            case NORMAL -> "DENTRO DO POLIGONO";
+            case ALERTA -> "FORA DO POLIGONO";
+            case FINALIZADO -> "FINALIZADO";
+        };
+    }
 }
