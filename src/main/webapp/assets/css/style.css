@@ -150,6 +150,21 @@ textarea {
     gap: 18px;
 }
 
+.activation-fields {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    align-items: end;
+}
+
+.activation-actions {
+    margin-top: 2px;
+}
+
+.activation-actions .btn {
+    min-width: 220px;
+}
+
 .field {
     display: grid;
     gap: 8px;
@@ -659,6 +674,10 @@ tbody tr:hover {
     .login-grid {
         grid-template-columns: 1fr;
     }
+
+    .activation-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 720px) {
@@ -675,6 +694,14 @@ tbody tr:hover {
 
     .metrics-grid {
         grid-template-columns: 1fr;
+    }
+
+    .activation-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .activation-actions .btn {
+        width: 100%;
     }
 
     .topbar {

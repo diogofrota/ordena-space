@@ -13,9 +13,9 @@
                 <p>Abra uma nova jornada de 12 horas com setor, viatura e equipe operacional.</p>
             </div>
 
-            <div class="split-grid">
-                <section class="panel">
-                    <form class="form-grid" method="post" action="${pageContext.request.contextPath}/ativacao">
+            <section class="panel activation-panel">
+                <form class="form-grid activation-form" method="post" action="${pageContext.request.contextPath}/ativacao">
+                    <div class="activation-fields">
                         <div class="field">
                             <label for="viaturaId">Selecionar viatura</label>
                             <select id="viaturaId" name="viaturaId" required>
@@ -55,36 +55,13 @@
                                 </c:forEach>
                             </select>
                         </div>
-
-                        <div class="button-row">
-                            <button class="btn btn-primary" type="submit">Ativar servico</button>
-                        </div>
-                    </form>
-                </section>
-
-                <section class="panel">
-                    <span class="section-kicker">observacao</span>
-                    <h3 class="section-title">Regras desta versao</h3>
-                    <div class="helper-grid">
-                        <div class="helper-card">
-                            <h4>Duracao fixa</h4>
-                            <p class="subtle">Todo servico nasce com 12 horas de duracao.</p>
-                        </div>
-                        <div class="helper-card">
-                            <h4>Status inicial</h4>
-                            <p class="subtle">O fluxo comeca em `AGUARDANDO_GPS` ate a primeira leitura do tablet.</p>
-                        </div>
-                        <div class="helper-card">
-                            <h4>Recursos livres</h4>
-                            <p class="subtle">A tela prioriza viaturas e policiais ainda nao alocados em servicos abertos.</p>
-                        </div>
-                        <div class="helper-card">
-                            <h4>Encerramento</h4>
-                            <p class="subtle">A finalizacao manual altera o status para `FINALIZADO`.</p>
-                        </div>
                     </div>
-                </section>
-            </div>
+
+                    <div class="button-row activation-actions">
+                        <button class="btn btn-primary" type="submit">Ativar servico</button>
+                    </div>
+                </form>
+            </section>
 
             <section class="table-card">
                 <h3 class="section-title">Servicos ativos</h3>
